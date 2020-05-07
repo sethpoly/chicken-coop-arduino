@@ -12,7 +12,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 // For button sensors when reading door open/close
 int openDoorPin = 13;  
 int closeDoorPin = 10; 
-int toggleDoorPin = 30; 
+int toggleDoorPin = 30; //30
 bool doorOpen = true;
 
 // Open door values
@@ -103,10 +103,11 @@ void setup() {
   // Init the close/open door button sensors
   pinMode(openDoorPin, INPUT);
   pinMode(closeDoorPin, INPUT);
+  pinMode(toggleDoorPin, INPUT);
 }
 
 // Write to the LCD
-void writeToLCD(int column, int row, String sensor, float value){
+void writeToLCD(int column, int row, String sensor, String value){
   lcd.setCursor(column, row);
   lcd.print(sensor);
   lcd.print(value);
@@ -131,18 +132,18 @@ void timeClock(){
 
 void getTime() {
   // digital clock display of the time
-  Serial.print(hour());
-  Serial.print(":");
-  Serial.print(minute());
-  Serial.print(":");
-  Serial.print(second());
-  Serial.print(" ");
-  Serial.print(month());
-  Serial.print(" ");
-  Serial.print(day());
-  Serial.print(" ");
-  Serial.print(year()); 
-  Serial.println();   
+//  Serial.print(hour());
+//  Serial.print(":");
+//  Serial.print(minute());
+//  Serial.print(":");
+//  Serial.print(second());
+//  Serial.print(" ");
+//  Serial.print(month());
+//  Serial.print(" ");
+//  Serial.print(day());
+//  Serial.print(" ");
+//  Serial.print(year()); 
+//  Serial.println();   
 
   month_ = month() - 1;
   hour_ = hour();
@@ -179,28 +180,28 @@ void handleDoor() {
 
 // Handle the door toggle switch
 void handleDoorToggle() {
-//  if(toggleDoorState != toggleSwitch) { // If the button is pressed and the door is not currently opening
-//    if(toggleDoorState == 1) {  // Button is pressed
-//      Serial.println("Outside button pressed");
-//      toggleSwitch = true;
-//    } 
-  //}
+  if(toggleDoorState != toggleSwitch) { // If the button is pressed and the door is not currently opening
+    if(toggleDoorState == 1) {  // Button is pressed
+      //Serial.println("Outside button pressed");
+      toggleSwitch = true;
+    } 
+  }
 
   // Open door by outside toggle switch <1 complete press>
-//  if(toggleSwitch && toggleDoorState == 0) {
-////    if(doorOpen) {
-////      closeDoor();
-////    }
-////    else {
-////      openDoor();
-////    }
-//    //Serial.println("Toggle engage");
-// // }
-//  // If user started toggle switch & is holding the switch, stop the motor
-////  else if(toggleSwitch && toggleDoorState == 1) {
-////    Serial.println("Outside button is held - pausing motor");
-////    stopMotor();
-////  }
+  if(toggleSwitch && toggleDoorState == 0) {
+    if(doorOpen) {
+      closeDoor();
+    }
+    else {
+      openDoor();
+    }
+   // Serial.println("Toggle engage");
+ }
+  // If user started toggle switch & is holding the switch, stop the motor
+  else if(toggleSwitch && toggleDoorState == 1) {
+    //Serial.println("Outside button is held - pausing motor");
+    stopMotor();
+  }
 }
 
 
@@ -214,6 +215,18 @@ void processSyncMessage() {
      long int converted_time = convertTimestamp(pctime);
      if(converted_time >= DEFAULT_TIME) {  // Check the integer is a valid time (greater than Jan 1 2013)
        setTime(converted_time); // Sync Arduino clock to the time received on the serial port
+       Serial.print(hour());
+       Serial.print(":");
+       Serial.print(minute());
+       Serial.print(":");
+       Serial.print(second());
+       Serial.print(" ");
+       Serial.print(month());
+       Serial.print(" ");
+       Serial.print(day());
+       Serial.print(" ");
+       Serial.print(year()); 
+       Serial.println();   
      }
   }
 }
@@ -251,8 +264,8 @@ void closeDoor() {
     Serial.println("Closing Door");
     if(closeDoorState == 1) {
       stopMotor();
-      doorOpen = false;
       toggleSwitch = false;
+      doorOpen = false;
       Serial.println("DOOR HAS CLOSED - STOPPING MOTOR");
     }
 }
@@ -264,8 +277,8 @@ void openDoor() {
     Serial.println("Opening Door");
     if(openDoorState == 1) {
       stopMotor();
-      doorOpen = true;
       toggleSwitch = false;
+      doorOpen = true;
       Serial.println("DOOR HAS OPENED - STOPPING MOTOR");
     }
 }
@@ -316,6 +329,7 @@ void debounceOpenDoorState(){
       if(openDoorStateVal != openDoorState) {
         openDoorState = openDoorStateVal;
       }
+      //Serial.println(openDoorState); 
     }
   }
 }
@@ -330,6 +344,7 @@ void debounceCloseDoorState(){
       if(closeDoorStateVal != closeDoorState) {
         closeDoorState = closeDoorStateVal;
       }
+      //Serial.println(closeDoorState);
     }
   }
 }
@@ -345,7 +360,8 @@ void debounceToggleDoorState(){
       if(toggleDoorStateVal != toggleDoorState) {
         toggleDoorState = toggleDoorStateVal;
       }
-      Serial.println(toggleDoorState);
+      //Serial.print("Outside Door Button Status: ");
+      //Serial.println(toggleDoorState);
     }
   }
 }
@@ -359,17 +375,17 @@ void readTempHumid() {
 //  Serial.print("Humidity = ");
 //  Serial.print(DHT.humidity);
 //  Serial.println("%");
-  delay(1000);  
+  //delay(1000);  
 }
 
 // Toggle light using temperature
 void toggleLight() {
   if(temp <= maxTemp) {
-    Serial.println("Light on");
+    //Serial.println("Light on");
     digitalWrite(relayPin, LOW);
   }
   else {
-    Serial.println("Light off");
+    //Serial.println("Light off");
     digitalWrite(relayPin, HIGH);
   }
 }
@@ -377,19 +393,19 @@ void toggleLight() {
 // Toggle the fan based on temp/humidity
 void toggleFan(){
   if(humidity >= 40 && temp < 80) {
-     Serial.println("Fan on");
+     //Serial.println("Fan on");
      digitalWrite(fanPin, LOW);
   }
   else if(temp >= 80 && humidity <= 40) {
-     Serial.println("Fan on");
+     //Serial.println("Fan on");
      digitalWrite(fanPin, LOW);
   }
   else if(temp >= 80 || humidity >= 40){
-     Serial.println("Fan on");
+     //Serial.println("Fan on");
      digitalWrite(fanPin, LOW);
   }
   else if(temp < 80 && humidity < 40){  // Turn fan off
-    Serial.println("Fan off");
+    //Serial.println("Fan off");
     digitalWrite(fanPin, HIGH);
   }
 }
@@ -407,18 +423,24 @@ long int convertTimestamp(long int GMT_time){
   return converted_time;
 }
 
+// USed to convert temp & humidity values to string for LCD
+String dhtFloatToStr(float value) {
+  char tempStr[16];
+  dtostrf(value, 1, 1, tempStr);
+  return (String) tempStr;
+}
+
 void loop() {
   debounceCloseDoorState();
   debounceOpenDoorState();
-  //debounceToggleDoorState();
+  debounceToggleDoorState();
   
   readTempHumid();
   toggleLight();
   toggleFan();
   timeClock();
 
-  writeToLCD(0,0,"Temp: ", temp);
-  writeToLCD(0,1,"Humidity: ", humidity);
-  //testDoor();
-  //handleDoorToggle();
+  writeToLCD(0,0,"Temp: ", dhtFloatToStr(temp));
+  writeToLCD(0,1,"Humidity: ", dhtFloatToStr(humidity));
+  handleDoorToggle();
 }
